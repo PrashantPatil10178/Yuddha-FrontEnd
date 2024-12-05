@@ -1,22 +1,23 @@
+import { jwtDecode, JwtPayload } from "jwt-decode";
+import Cookies from "js-cookie";
 import axios, {
   AxiosError,
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
 } from "axios";
-import Cookies from "js-cookie";
-import { JwtPayload, jwtDecode } from "jwt-decode";
-
-const API_URL = "http://localhost:4000";
-const ACCESS_TOKEN_COOKIE = "access_token";
-const REFRESH_TOKEN_COOKIE = "refresh_token";
+import { escape } from "querystring";
 
 interface RefreshTokenResponse {
   accessToken: string;
   refreshToken: string;
 }
 
-class Api {
+const API_URL = "http://localhost:4000";
+const ACCESS_TOKEN_COOKIE = "access_token";
+const REFRESH_TOKEN_COOKIE = "refresh_token";
+
+export class AuthService {
   private api: AxiosInstance;
   private refreshPromise: Promise<string> | null = null;
 
@@ -83,9 +84,14 @@ class Api {
       const decoded = jwtDecode<JwtPayload>(token);
       if (!decoded.exp) return true;
 
-      // Check if the token is expired or will expire in the next 5 minutes
       const currentTime = Date.now() / 1000;
-      return decoded.exp < currentTime + 300; // 300 seconds = 5 minutes
+      const isExpired = decoded.exp < currentTime + 300; // 300 seconds = 5 minutes
+
+      if (isExpired) {
+        console.log("Token is expired or will expire soon. Refreshing...");
+      }
+
+      return isExpired;
     } catch (error) {
       console.error("Error decoding token:", error);
       return true; // Assume token is expired if it can't be decoded
@@ -93,13 +99,18 @@ class Api {
   }
 
   private async refreshAccessToken(): Promise<string> {
+    console.log("Checking refreshPromise state");
     if (this.refreshPromise) {
-      return this.refreshPromise;
+      console.log("A refresh attempt is already in progress");
+      return this.refreshPromise; // Return the existing promise
     }
 
+    console.log("Starting a new refresh attempt");
     this.refreshPromise = new Promise<string>((resolve, reject) => {
       const refreshToken = Cookies.get(REFRESH_TOKEN_COOKIE);
       if (!refreshToken) {
+        console.error("No refresh token found");
+        this.refreshPromise = null; // Reset promise
         reject(new Error("No refresh token available"));
         return;
       }
@@ -107,21 +118,24 @@ class Api {
       this.api
         .post<RefreshTokenResponse>("/auth/refresh", { refreshToken })
         .then((response) => {
+          console.log("Successfully refreshed token:", response.data);
           this.setTokens(response.data.accessToken, response.data.refreshToken);
           resolve(response.data.accessToken);
         })
         .catch((error) => {
+          console.error("Error refreshing token:", error);
           reject(error);
         })
         .finally(() => {
-          this.refreshPromise = null;
+          console.log("Resetting refreshPromise");
+          this.refreshPromise = null; // Ensure it resets
         });
     });
 
     return this.refreshPromise;
   }
 
-  public setTokens(accessToken: string, refreshToken: string) {
+  public setTokens(accessToken: string, refreshToken: string): void {
     Cookies.set(ACCESS_TOKEN_COOKIE, accessToken, {
       secure: false,
       sameSite: "strict",
@@ -130,6 +144,22 @@ class Api {
       secure: false,
       sameSite: "strict",
     });
+  }
+
+  public getAccessToken(): string | undefined {
+    return Cookies.get(ACCESS_TOKEN_COOKIE);
+  }
+
+  public getRefreshToken(): string | undefined {
+    return Cookies.get(REFRESH_TOKEN_COOKIE);
+  }
+
+  public getToken(): boolean {
+    if (Cookies.get(ACCESS_TOKEN_COOKIE)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public clearTokens() {
@@ -187,4 +217,4 @@ class Api {
   }
 }
 
-export const api = new Api();
+export const api = new AuthService();

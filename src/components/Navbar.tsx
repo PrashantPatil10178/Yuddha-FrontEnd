@@ -1,92 +1,171 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ModeToggle } from "@/components/common/mode-toggle";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { ModeToggle } from "./common/mode-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Search, User } from "lucide-react";
+import { api } from "@/services/AxiosInterceptor";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 
-const NavItems = () => (
-  <>
-    <Link
-      to="/"
-      className="text-base font-semibold transition-colors hover:text-primary focus:text-primary dark:hover:text-primary dark:focus:text-primary"
-    >
-      Home
-    </Link>
-    <Link
-      to="/about"
-      className="text-base font-semibold transition-colors hover:text-primary focus:text-primary dark:hover:text-primary dark:focus:text-primary"
-    >
-      About
-    </Link>
-    <Link
-      to="/contact"
-      className="text-base font-semibold transition-colors hover:text-primary focus:text-primary dark:hover:text-primary dark:focus:text-primary"
-    >
-      Contact
-    </Link>
-  </>
+interface UserData {
+  user: User;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  avatarUrl: string | "";
+  phoneNumber: number | null;
+  googleId: string;
+  role: string;
+  isActive: boolean;
+}
+
+const NavItems = ({ className }: { className?: string }) => (
+  <div className={`flex flex-col md:flex-row md:space-x-6 ${className}`}>
+    {["Home", "Courses", "About", "Contact"].map((item) => (
+      <Link
+        key={item}
+        to={`/${item.toLowerCase()}`}
+        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+      >
+        {item}
+      </Link>
+    ))}
+  </div>
 );
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userData, setUserData] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get<UserData>("/auth/me");
+        setUserData(response.user);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        setUserData(null);
+      }
+    };
+    console.log(api.getToken());
+    if (api.getToken()) {
+      fetchUserData();
+    }
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-black dark:border-gray-300">
-      <div className="container flex h-16 items-center justify-between px-4 md:px-8">
-        <div className="mr-4 flex items-center">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl sm:text-2xl text-gray-900 dark:text-white">
-              MyApp
-            </span>
-          </Link>
-        </div>
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-800 dark:text-white">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-lg dark:bg-background/75">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
+        {/* Brand Logo */}
+        <Link to="/" className="flex items-center space-x-2">
+          <span className="text-lg font-bold text-primary">EduApp</span>
+        </Link>
+
+        {/* Navigation Links */}
+        <nav className="hidden md:flex">
           <NavItems />
         </nav>
+
+        {/* Right Section: Search + User Actions */}
         <div className="flex items-center space-x-4">
+          {/* Search Bar */}
+          <form className="relative hidden md:block">
+            <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search courses..."
+              className="h-10 w-[200px] pl-10 pr-4 rounded-md"
+            />
+          </form>
+
+          {/* Mode Toggle */}
           <ModeToggle />
+
+          {/* User Menu or Login Button */}
+          {userData ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-lg border hover:border-primary"
+                >
+                  <User className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-60 bg-background shadow-lg"
+                align="end"
+              >
+                <DropdownMenuLabel className="font-medium">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarImage
+                        src={userData.avatarUrl}
+                        alt={userData.name}
+                      />
+                      <AvatarFallback className="rounded-lg">
+                        {userData.name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">
+                        {userData.name}
+                      </span>
+                      <span className="truncate text-xs">{userData.email}</span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Link to="/profile" className="w-full text-left">
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link to="/settings" className="w-full text-left">
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link to="/logout" className="w-full text-left">
+                    Log out
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild variant="outline" size="sm">
+              <Link to="/login">Login</Link>
+            </Button>
+          )}
+
+          {/* Mobile Menu Trigger */}
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                className="mr-2 px-0 text-lg hover:bg-transparent focus-visible:ring-0 dark:hover:bg-transparent dark:focus-visible:ring-0 md:hidden"
-              >
-                <Menu className="h-6 w-6 text-gray-800 dark:text-gray-200" />
-                <span className="sr-only">Toggle Menu</span>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-4">
-              <MobileNav />
+            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+              <nav className="flex flex-col space-y-4">
+                <NavItems className="space-y-4" />
+              </nav>
             </SheetContent>
           </Sheet>
         </div>
       </div>
     </header>
-  );
-}
-
-function MobileNav() {
-  return (
-    <div className="flex flex-col space-y-4">
-      <Link
-        to="/"
-        className="text-lg font-semibold hover:text-primary focus:text-primary dark:hover:text-primary dark:focus:text-primary"
-      >
-        Home
-      </Link>
-      <Link
-        to="/about"
-        className="text-lg font-semibold hover:text-primary focus:text-primary dark:hover:text-primary dark:focus:text-primary"
-      >
-        About
-      </Link>
-      <Link
-        to="/contact"
-        className="text-lg font-semibold hover:text-primary focus:text-primary dark:hover:text-primary dark:focus:text-primary"
-      >
-        Contact
-      </Link>
-    </div>
   );
 }
