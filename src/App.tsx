@@ -22,24 +22,22 @@ const LoginForm = lazy(() => import("./pages/login-page.tsx"));
 function App() {
   return (
     <Router>
-      <ToastProvider>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <Navbar />
-          <Suspense fallback={<div>Loading...</div>}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<LoginForm />} />
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/logout" element={<Navigate to="/login" />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </Suspense>
-        </ThemeProvider>
-      </ToastProvider>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <Navbar />
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/logout" element={<Navigate to="/login" />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Suspense>
+      </ThemeProvider>
     </Router>
   );
 }

@@ -37,7 +37,7 @@ const NavItems = ({ className }: { className?: string }) => (
       <Link
         key={item}
         to={`/${item.toLowerCase()}`}
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+        className="text-sm font-medium hover:text-primary"
       >
         {item}
       </Link>
@@ -66,11 +66,11 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-lg dark:bg-background/75">
+    <header className="sticky top-0 z-50 w-full border-b shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          <span className="text-lg font-bold text-primary">EduApp</span>
+          <span className="text-lg font-bold">EduApp</span>
         </Link>
 
         {/* Navigation Links */}
@@ -82,10 +82,10 @@ export function Navbar() {
         <div className="flex items-center space-x-4">
           {/* Search Bar */}
           <form className="relative hidden md:block">
-            <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-3.5 h-4 w-4" />
             <Input
               placeholder="Search courses..."
-              className="h-10 w-[200px] pl-10 pr-4 rounded-md"
+              className="h-10 w-[200px] pl-10 pr-4 rounded-md "
             />
           </form>
 
@@ -98,13 +98,13 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-10 w-10 rounded-lg border hover:border-primary"
+                  className="relative h-10 w-10 rounded-lg border 0"
                 >
-                  <User className="h-5 w-5 text-muted-foreground" />
+                  <User className="h-5 w-5 " />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-60 bg-background shadow-lg"
+                className="w-60  shadow-lg border"
                 align="end"
               >
                 <DropdownMenuLabel className="font-medium">
@@ -119,26 +119,28 @@ export function Navbar() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
+                      <span className="truncate font-semibold ">
                         {userData.name}
                       </span>
-                      <span className="truncate text-xs">{userData.email}</span>
+                      <span className="truncate text-xs ">
+                        {userData.email}
+                      </span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Link to="/profile" className="w-full text-left">
+                  <Link to="/profile" className="w-full text-left ">
                     Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Link to="/settings" className="w-full text-left">
+                  <Link to="/settings" className="w-full text-left ">
                     Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Link to="/logout" className="w-full text-left">
+                  <Link to="/logout" className="w-full text-left ">
                     Log out
                   </Link>
                 </DropdownMenuItem>
@@ -158,7 +160,7 @@ export function Navbar() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+            <SheetContent side="left" className="w-[300px] sm:w-[400px] ">
               <nav className="flex flex-col space-y-4">
                 <NavItems className="space-y-4" />
               </nav>

@@ -1,4 +1,4 @@
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Palette } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -6,11 +6,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "../../styles/theme-provider";
 
+type ColorScheme = "blue" | "green" | "purple";
+
 export function ModeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme, colorScheme, setColorScheme } = useTheme();
 
   return (
     <DropdownMenu>
@@ -31,6 +38,24 @@ export function ModeToggle() {
         <DropdownMenuItem onClick={() => setTheme("system")}>
           System
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Palette className="mr-2 h-4 w-4" />
+            <span>Color Scheme</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup
+              value={colorScheme}
+              onValueChange={(value) => setColorScheme(value as ColorScheme)}
+            >
+              <DropdownMenuRadioItem value="blue">Blue</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="green">Green</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="purple">
+                Purple
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
       </DropdownMenuContent>
     </DropdownMenu>
   );

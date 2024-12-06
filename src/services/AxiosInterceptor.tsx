@@ -99,37 +99,41 @@ export class AuthService {
   }
 
   private async refreshAccessToken(): Promise<string> {
-    console.log("Checking refreshPromise state");
     if (this.refreshPromise) {
-      console.log("A refresh attempt is already in progress");
-      return this.refreshPromise; // Return the existing promise
+      console.log("Reached I guess");
+      console.log("I am new to " + (await this.refreshPromise));
+      return await this.refreshPromise;
     }
 
-    console.log("Starting a new refresh attempt");
-    this.refreshPromise = new Promise<string>((resolve, reject) => {
-      const refreshToken = Cookies.get(REFRESH_TOKEN_COOKIE);
-      if (!refreshToken) {
-        console.error("No refresh token found");
-        this.refreshPromise = null; // Reset promise
-        reject(new Error("No refresh token available"));
-        return;
-      }
+    this.refreshPromise = new Promise<string>(async (resolve, reject) => {
+      try {
+        const refreshToken = Cookies.get(REFRESH_TOKEN_COOKIE);
+        if (!refreshToken) {
+          throw new Error("No refresh token available");
+        }
 
-      this.api
-        .post<RefreshTokenResponse>("/auth/refresh", { refreshToken })
-        .then((response) => {
-          console.log("Successfully refreshed token:", response.data);
+        const response = await this.api.post<RefreshTokenResponse>(
+          "/auth/refresh",
+          { refreshToken }
+        );
+
+        if (
+          response.data &&
+          response.data.accessToken &&
+          response.data.refreshToken
+        ) {
           this.setTokens(response.data.accessToken, response.data.refreshToken);
           resolve(response.data.accessToken);
-        })
-        .catch((error) => {
-          console.error("Error refreshing token:", error);
-          reject(error);
-        })
-        .finally(() => {
-          console.log("Resetting refreshPromise");
-          this.refreshPromise = null; // Ensure it resets
-        });
+        } else {
+          throw new Error("Invalid response from refresh token endpoint");
+        }
+      } catch (error) {
+        console.error("Error refreshing token:", error);
+        this.logout(); // Logout user if refresh fails
+        reject(error);
+      } finally {
+        this.refreshPromise = null;
+      }
     });
 
     return this.refreshPromise;
