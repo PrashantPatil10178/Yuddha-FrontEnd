@@ -66,7 +66,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b shadow-sm bg-opacity-30 backdrop-blur-lg">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center space-x-2">
